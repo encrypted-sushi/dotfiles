@@ -33,6 +33,12 @@ vim.opt.undofile = true
 vim.opt.swapfile = false
 vim.opt.backup = false
 
+-- [[ Built-in terminal ]]
+vim.opt.shell = "pwsh.exe"
+vim.opt.shellcmdflag = "-NoLogo -Commend"
+vim.opt.shellquote = ""
+vim.opt.shellxquote = ""
+
 -- Completion
 vim.opt.completeopt = "menu,menuone,noselect"
 
