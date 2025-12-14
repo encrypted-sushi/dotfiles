@@ -1,3 +1,6 @@
+# Git global ignore file
+# To enable: git config --global core.excludesfile ~/.config/git/ignore
+
 # Windows system files
 NTUSER.DAT*
 ntuser.dat*

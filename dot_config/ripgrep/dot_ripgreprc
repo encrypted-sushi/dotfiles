@@ -1,3 +1,7 @@
+# Ripgrep configuration file
+# To enable: $env:RIPGREP_CONFIG_PATH = "$env:XDG_CONFIG_HOME\ripgrep\.ripgreprc"
+# (This should be set in your PowerShell profile)
+
 # Ignore Windows system files
 --glob=!NTUSER.DAT*
 --glob=!ntuser.dat*
