@@ -1,0 +1,16 @@
+# Ignore Windows system files
+--glob=!NTUSER.DAT*
+--glob=!ntuser.dat*
+
+# Ignore common directories
+--glob=!.git/
+--glob=!node_modules/
+
+# Follow symbolic links
+--follow
+
+# Search hidden files
+--hidden
+
+# Smart case (case-insensitive unless uppercase used)
+--smart-case
