@@ -24,6 +24,11 @@ function M.setup(config, wezterm)
       -- Line movement
       { key = '0', mods = 'NONE', action = act.CopyMode 'MoveToStartOfLine' },
       { key = '$', mods = 'SHIFT', action = act.CopyMode 'MoveToEndOfLineContent' },
+
+      -- Page movement
+      -- Half pages using a method taught to me by Claude AI
+      { key = 'd', mods = 'CTRL', action = act.CopyMode { MoveByPage = 0.5 } },
+      { key = 'u', mods = 'CTRL', action = act.CopyMode { MoveByPage = -0.5 } },
       
       -- Selection modes
       { key = 'v', mods = 'NONE', action = act.CopyMode { SetSelectionMode = 'Cell' } },
