@@ -1,0 +1,11 @@
+# Windows system files
+NTUSER.DAT*
+ntuser.dat*
+
+# Common stuff to ignore globally
+.DS_Store
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
