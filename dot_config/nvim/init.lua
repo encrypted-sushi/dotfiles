@@ -1,3 +1,4 @@
-require('DefaultProfile.config.options')
-require('DefaultProfile.config.keymaps')
+require('config.options')
+require('config.keymaps')
+require('config.lazy')
 
