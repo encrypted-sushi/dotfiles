@@ -1,20 +1,53 @@
-# Ripgrep configuration file
-# To enable: $env:RIPGREP_CONFIG_PATH = "$env:XDG_CONFIG_HOME\ripgrep\.ripgreprc"
-# (This should be set in your PowerShell profile)
+##### Ripgrep configuration file
+### To enable: $env:RIPGREP_CONFIG_PATH = "$env:XDG_CONFIG_HOME\ripgrep\.ripgreprc"
+### Should be also in Account Environment Variables if using things like Neovide
+#
+# Follow symbolic links
+--follow
+# Search hidden files
+--hidden
+# Smart case (case-insensitive unless uppercase used)
+--smart-case
 
+##### Configurations for ignoring files
 # Ignore Windows system files
 --glob=!NTUSER.DAT*
 --glob=!ntuser.dat*
+--glob=!AppData/
 
 # Ignore common directories
 --glob=!.git/
 --glob=!node_modules/
+--glob=!cache/
 
-# Follow symbolic links
---follow
+# Python-related
+--glob=!.venv/
+--glob=!venv/
+--glob=!env/
+--glob=!__pycache__/
+--glob=!*.pyc
+--glob=!.pytest_cache/
+--glob=!.mypy_cache/
+--glob=!.ruff_cache/
 
-# Search hidden files
---hidden
+# Ignore other commons to me
+--glob=!.vscode/
+--glob=!scoop/
+--glob=!fonts/
+--glob=!Apps/
 
-# Smart case (case-insensitive unless uppercase used)
---smart-case
+# Ignore specific to me
+--glob=!"__Folders Shared with me__"/*
+--glob=!*.png
+--glob=!*.jpg
+--glob=!*.jpeg
+--glob=!*.gif
+--glob=!*.ico
+--glob=!*.svg
+--glob=!*.woff
+--glob=!*.woff2
+--glob=!*.ttf
+--glob=!*.eot
+--glob=!*.pdf
+
+

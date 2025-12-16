@@ -6,7 +6,7 @@ $env:SSH_AUTH_SOCK = $null
 $profilePath = Split-Path $PROFILE
 
 # Define my config path
-$configPath = Join-Path $profilePath "configs"
+$configPath = Join-Path $profilePath "config"
 if (Test-Path $configPath) {
   Get-ChildItem -Path $configPath -Filter *.ps1 | ForEach-Object {
     . $_.FullName

@@ -1,4 +1,12 @@
 local o = vim.opt
+-- [[ Windows and the infamous(?) ShaDa ]]
+-- Fix ShaDa "All tmp files exist" error on Windows
+vim.opt.shada = "!,'100,<50,s10,h"
+
+-- This is the "Nuclear" fix if the error persists:
+-- It moves the ShaDa file OUT of the AppData/Local folder 
+-- and into a place Windows/OneDrive won't harass it.
+-- vim.opt.shadafile = "C:\\temp\\main.shada" -- Only use if the line above fails
 
 -- [[ Line numbers ]]
 o.number = true
@@ -32,6 +40,7 @@ vim.opt.undodir = undodir
 vim.opt.undofile = true
 vim.opt.swapfile = false
 vim.opt.backup = false
+vim.opt.fsync = false
 
 -- [[ Built-in terminal ]]
 vim.opt.shell = "pwsh.exe"

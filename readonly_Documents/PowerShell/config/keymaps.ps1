@@ -33,3 +33,24 @@ Set-PSReadLineKeyHandler -Chord Ctrl+d -ScriptBlock {
 Set-PSReadLineKeyHandler -Chord Ctrl+p -Function PreviousHistory
 Set-PSReadLineKeyHandler -Chord Ctrl+n -Function NextHistory
 
+# Minimal fzf starter -------------------------------------------------------
+# Requires: fzf. Optional: fd, bat.
+
+function Select-File {
+  param([string]$Start = '.')
+  if (Get-Command fd -ErrorAction SilentlyContinue) {
+    $list = fd --type f --hidden --exclude .git $Start
+  } else {
+    $list = Get-ChildItem -Path $Start -Recurse -File -Force | ForEach-Object FullName
+  }
+  $sel = $list | fzf --height 40% --reverse --prompt "file> " --preview "bat --style=plain --color=always {}" 2>$null
+  if ($sel) { $sel.Trim() } else { $null }
+}
+
+Set-PSReadLineKeyHandler -Key 'Ctrl+t' -ScriptBlock {
+  $f = Select-File
+  if ($f) {
+    [Microsoft.PowerShell.PSConsoleReadLine]::Insert($f)
+  }
+}
+# Usage: press Ctrl+T, pick a file, its path is inserted at the prompt.
