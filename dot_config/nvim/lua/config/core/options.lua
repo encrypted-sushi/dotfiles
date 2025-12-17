@@ -1,12 +1,28 @@
 local o = vim.opt
--- [[ Windows and the infamous(?) ShaDa ]]
--- Fix ShaDa "All tmp files exist" error on Windows
-vim.opt.shada = "!,'100,<50,s10,h"
+local is_windows = vim.fn.has("win32") == 1
 
--- This is the "Nuclear" fix if the error persists:
--- It moves the ShaDa file OUT of the AppData/Local folder 
--- and into a place Windows/OneDrive won't harass it.
--- vim.opt.shadafile = "C:\\temp\\main.shada" -- Only use if the line above fails
+
+if is_windows then
+  -- [[ Windows and the infamous(?) ShaDa ]]
+  -- Fix ShaDa "All tmp files exist" error on Windows
+  vim.opt.shada = "!,'100,<50,s10,h"
+
+  -- This is the "Nuclear" fix if the error persists:
+  -- It moves the ShaDa file OUT of the AppData/Local folder 
+  -- and into a place Windows/OneDrive won't harass it.
+  -- vim.opt.shadafile = "C:\\temp\\main.shada" -- Only use if the line above fails
+
+  -- The "Plumbing" for Windows: cmd.exe
+  vim.o.shell = "cmd.exe"
+  vim.o.shellcmdflag = "/K set shellslash=1 & cmd.exe /c"
+  vim.o.shellredir = ">%s 2>&1"
+  vim.o.shellpipe = "2>&1 | %s"
+  vim.o.shellquote = ""
+  vim.o.shellxquote = ""
+else
+  -- The "Plumbing" for Linux/WSL: sh
+  vim.o.shell = "/bin/sh"
+end
 
 -- [[ Line numbers ]]
 o.number = true
@@ -41,12 +57,6 @@ vim.opt.undofile = true
 vim.opt.swapfile = false
 vim.opt.backup = false
 vim.opt.fsync = false
-
--- [[ Built-in terminal ]]
-vim.opt.shell = "pwsh.exe"
-vim.opt.shellcmdflag = "-NoLogo -Commend"
-vim.opt.shellquote = ""
-vim.opt.shellxquote = ""
 
 -- Completion
 vim.opt.completeopt = "menu,menuone,noselect"
