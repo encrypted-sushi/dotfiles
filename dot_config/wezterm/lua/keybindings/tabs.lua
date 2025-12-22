@@ -4,53 +4,79 @@ local act = wezterm.action
 
 local M = {}
 
-function M.setup(config)
-  -- Add keybinding to ENTER tab mode
-  local tab_keys = {
-    { 
-      key = 't',
-      mods = 'LEADER', 
-      action = act.ActivateKeyTable {
-        name = 'tab_mode',
-        one_shot = false,
-      }
-    },
+-- ==========================================================
+-- Tab Mode Action Functions
+-- ==========================================================
+local function enter_tab_mode()
+  return act.ActivateKeyTable {
+    name = 'tab_mode',
+    one_shot = false,
   }
+end
 
-  config.keys = config.keys or {}
-  for _, key in ipairs(tab_keys) do
-    table.insert(config.keys, key)
-  end
 
-  -- NOW define what happens INSIDE tab mode
-  config.key_tables = config.key_tables or {}
-  config.key_tables.tab_mode = {
-    -- Create a new Tab
-    { key = 'c', action = act.ShowTabNavigator },  -- ← NO mods here!
-    --{ key = 'l', action = act.ShowTabNavigator },  -- ← NO mods here!
-    -- Show tab navigator and exit tab mode after selection
-    { 
-      key = 'l', 
-      action = wezterm.action_callback(function(window, pane)
-        window:perform_action(act.ShowTabNavigator, pane)
-        window:perform_action(act.PopKeyTable, pane)
-      end)
-    },       -- Rename current tab
-    { 
-      key = 'r', 
-      action = act.PromptInputLine {
-        description = 'Enter new name for tab',
-        action = wezterm.action_callback(function(window, pane, line)
+-- Create New Tab:  map to "c"
+local function create_tab()
+  return act.SpawnTab('CurrentPaneDomain')
+end
+
+
+-- List Tabs: map to "l"
+local function list_tabs()
+  return wezterm.action_callback(function(window, pane)
+    -- Exit tab mode first to avoid key conflicts
+    window:perform_action(act.PopKeyTable, pane)
+    -- Display the tab selector
+    window:perform_action(act.ShowTabNavigator, pane)
+  end)
+end
+
+
+-- Rename Tab: map to "r"
+local function rename_tab()
+  return wezterm.action_callback(function(window, pane)
+    -- Exit tab mode first to avoid key conflicts
+    window:perform_action(act.PopKeyTable, pane)
+    -- Now prompt for a new name
+    window:perform_action(
+      -- action
+      act.PromptInputLine {
+        description = "New name for tab",
+        action = wezterm.action_callback(function(win, p, line)
           if line then
-            window:active_tab():set_title(line)
+            win:active_tab():set_title(line)
           end
         end),
       },
-    },
-    
-    -- Exit tab mode
+
+      -- pane
+      pane
+    )
+  end)
+end
+
+
+
+-- ==========================================================
+-- Tab Mode Keymaps
+-- ==========================================================
+function M.setup(config)
+  config.keys = config.keys or {}
+  config.key_tables = config.key_tables or {}
+  
+  -- Add keybinding to ENTER tab mode
+  table.insert(config.keys, {
+    key = 't', mods = 'LEADER', action = enter_tab_mode()
+  })
+
+  -- Tab mode key mappings
+  config.key_tables.tab_mode = {
+    { key = 'c', action = create_tab() },
+    { key = 'l', action = list_tabs() },
+    { key = 'r', action = rename_tab() },
     { key = 'Escape', action = 'PopKeyTable' },
     { key = 'q', action = 'PopKeyTable' },
+    { key = 'c', mods = 'CTRL', action = 'PopKeyTable' },
   }
 end
 
