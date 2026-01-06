@@ -50,6 +50,12 @@ return {
     -- Smooth scrolling
     scroll = { 
       enabled = true,
+      animate = {
+        duration = {
+          step = 10,   -- Duration of each frame in ms.    Default: 15  (lower = smoother but more frames) 
+          total = 100, -- Total animation duration in ms.  Default: 250 (lower = faster)
+        },
+      },
     },
     
     -- Beautiful notifications
@@ -85,7 +91,7 @@ return {
         -- THIS IS THE EXPLORER CONFIG - FLOATING WINDOW
         explorer = {
           hidden = true,
-          autoclose = true,
+          auto_close = true,
           layout = {
             preview = false,
             layout = {
@@ -262,7 +268,10 @@ return {
     -- ──────────────────────────────────────────
     -- LSP INTEGRATION
     -- ──────────────────────────────────────────
-    
+    { "gd", function() Snacks.picker.lsp_definitions() end, desc = "Goto Definition" },
+    { "gr", function() Snacks.picker.lsp_references() end, nowait = true, desc = "References" },
+    { "gI", function() Snacks.picker.lsp_implementations() end, desc = "Goto Implementation" },
+    { "gy", function() Snacks.picker.lsp_type_definitions() end, desc = "Goto T[y]pe Definition" },
     { "<leader>cs", function() Snacks.picker.lsp_document_symbols() end, desc = "Document Symbols" },
     { "<leader>cS", function() Snacks.picker.lsp_workspace_symbols() end, desc = "Workspace Symbols" },
     { "<leader>cd", function() Snacks.picker.diagnostics() end, desc = "Diagnostics" },
@@ -296,14 +305,28 @@ return {
     -- ──────────────────────────────────────────
     -- TOGGLES (UI OPTIONS)
     -- ──────────────────────────────────────────
+    -- LINE NUMBERS
+    -- The below configuration is a convenience function, provided by snacks.nvim, to toggle both at once.
+    -- If individual toggles are wanted, uncomment the two lines below.
+    -- { "<leader>ul", function() Snacks.toggle.option("number", { name = "Line Numbers" }):toggle() end, desc = "Toggle Line Numbers" },
+    -- { "<leader>ur", function() Snacks.toggle.option("relativenumber", { name = "Relative Numbers" }):toggle() end, desc = "Toggle Relative Numbers" },
+    { "<leader>ubl", function() Snacks.toggle.line_number():toggle() end, desc = "Toggle Line Numbers" },
     
-    { "<leader>uc", function() Snacks.toggle.option("colorcolumn", { off = "", on = "80" }) end, desc = "Toggle Color Column" },
-    { "<leader>us", function() Snacks.toggle.option("spell") end, desc = "Toggle Spelling" },
-    { "<leader>uw", function() Snacks.toggle.option("wrap") end, desc = "Toggle Wrap" },
-    { "<leader>ur", function() Snacks.toggle.option("relativenumber") end, desc = "Toggle Relative Numbers" },
-    { "<leader>ud", function() Snacks.toggle.diagnostics() end, desc = "Toggle Diagnostics" },
-    { "<leader>ul", function() Snacks.toggle.line_number() end, desc = "Toggle Line Numbers" },
-    { "<leader>ui", function() Snacks.toggle.inlay_hints() end, desc = "Toggle Inlay Hints" },
+    -- DIAGNOSTICS
+    { "<leader>ud", function() Snacks.toggle.diagnostics():toggle() end, desc = "Toggle Diagnostics" },
+
+    -- INLAY HINTS
+    { "<leader>ui", function() Snacks.toggle.inlay_hints():toggle() end, desc = "Toggle Inlay Hints" },
+
+    -- OTHERS (Might be useful down the line)
+    -- Color Column
+    { "<leader>uc", function() Snacks.toggle.option("colorcolumn", { off = "", on = "80", name = "Color Column" }):toggle() end, desc = "Toggle Color Column" },
+
+    -- Spelling
+    { "<leader>us", function() Snacks.toggle.option("spell", { name = "Spelling" }):toggle() end, desc = "Toggle Spelling" },
+
+    -- Line wrap
+    { "<leader>uw", function() Snacks.toggle.option("wrap", { name = "Line Wrap" }):toggle() end, desc = "Toggle Line Wrap" },
   },
 }
 

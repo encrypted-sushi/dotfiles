@@ -6,6 +6,7 @@ return {
   config = function()
     require("catppuccin").setup({
       flavour = "mocha",
+      transparent_background = _G.MyConfigs.background_transparency or false,
     })
     vim.cmd([[colorscheme catppuccin]])
   end,
