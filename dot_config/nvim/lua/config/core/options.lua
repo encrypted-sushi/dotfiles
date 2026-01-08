@@ -24,6 +24,9 @@ else
   vim.o.shell = "/bin/sh"
 end
 
+-- [[ File Formats ]]
+o.fileformats = "unix,dos"
+
 -- [[ Line numbers ]]
 o.number = true
 o.relativenumber = true
