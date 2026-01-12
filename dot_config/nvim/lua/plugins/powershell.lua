@@ -1,7 +1,7 @@
--- Detect OS using Lua/Neovim
-local is_windows = vim.fn.has('win32') == 1 or vim.fn.has('win64') == 1
+-- ~/.config/nvim/lua/plugins/powershell.lua
+local platform = require("config.platform")
 
-if is_windows then
+if platform.is_windows then
   return {
     'neovim/nvim-lspconfig',
     config = function()
@@ -18,7 +18,7 @@ if is_windows then
         root_markers = { 'PSScriptAnalyzerSettings.psd1', '.git' },
         bundle_path = mason_path .. '/packages/powershell-editor-services',
       })
-      
+
       vim.lsp.enable('powershell_es')
     end,
   }
