@@ -4,7 +4,7 @@
 -- Telescope replacement with native Lua speed
 -- ============================================
 
-local platform = require("config.platform")
+local platform = require("config.platform_detection.platform")
 
 return {
   "folke/snacks.nvim",
