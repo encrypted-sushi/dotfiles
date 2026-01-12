@@ -147,7 +147,7 @@ return {
       install.prefer_git = true
       install.auto_install = true
 
-      vim.notify("Treesitter: WSL (" .. libc .. ") -> " .. parser_dir, vim.log.levels.INFO)
+      vim.notify("Treesitter: WSL (" .. platform.libc .. ") -> " .. parser_dir, vim.log.levels.INFO)
 
     else
       vim.notify("Treesitter: Unknown environment", vim.log.levels.WARN)
