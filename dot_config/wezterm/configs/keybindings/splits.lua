@@ -4,10 +4,10 @@ local act = wezterm.action
 local M = {}
 
 function M.setup(config)
-  -- Keybinding to entry split mode
+  -- Keybinding to enter split mode
   local split_activation = {
-    { key = 'w', mods ='LEADER|CTRL', action = act.ActivateKeyTable {
-        name = 'split_mode', 
+    { key = 'w', mods ='LEADER', action = act.ActivateKeyTable {
+        name = 'split_mode',
         one_shot = false,
     }},
   }
@@ -19,7 +19,7 @@ function M.setup(config)
   end
 
 
-  -- Copy mode key table
+  -- Split mode key table
   config.key_tables = config.key_tables or {}
   config.key_tables.split_mode = {
     -- Window split/close/zoom/rotate
@@ -27,31 +27,31 @@ function M.setup(config)
     { key = '|', mods = 'SHIFT', action = act.Multiple {
       act.SplitHorizontal { domain = 'CurrentPaneDomain' },
       act.PopKeyTable
-    },
+    }},
     { key = 'v', mods = 'NONE', action = act.Multiple {
       act.SplitHorizontal { domain = 'CurrentPaneDomain' },
       act.PopKeyTable
-    },
+    }},
     -- Split horizontally (top and bottom)
     { key = '-', mods = 'NONE', action = act.Multiple {
       act.SplitVertical { domain = 'CurrentPaneDomain' },
       act.PopKeyTable
-    },
+    }},
     { key = 's', mods = 'NONE', action = act.Multiple {
-      act.SplitHorizontal { domain = 'CurrentPaneDomain' },
+      act.SplitVertical { domain = 'CurrentPaneDomain' },
       act.PopKeyTable
-    },
+    }},
     -- Close current pane
     { key = 'c', mods = 'NONE', action = act.Multiple {
       act.CloseCurrentPane { confirm = true },
       act.PopKeyTable
-    },
+    }},
     -- Toggle pane zoom (fullscreen current pane)
-    { key = 'z', mods = 'LEADER', action = act.Multiple {
+    { key = 'z', mods = 'NONE', action = act.Multiple {
       act.TogglePaneZoomState,
       act.PopKeyTable
-    },
-    
+    }},
+
     -- Navigation (Vim-style)
     { key = 'h', mods = 'NONE', action = act.ActivatePaneDirection 'Left' },
     { key = 'j', mods = 'NONE', action = act.ActivatePaneDirection 'Down' },
