@@ -4,20 +4,7 @@
 -- Telescope replacement with native Lua speed
 -- ============================================
 
--- 1. SHELL DETECTION LOGIC
-local function find_best_shell(shells)
-  for _, shell in ipairs(shells) do
-    if vim.fn.executable(shell) == 1 then
-      return shell
-    end
-  end
-  return nil
-end
-
-local is_windows = vim.fn.has("win32") == 1
-local win_shells = { "pwsh.exe", "powershell.exe", "cmd.exe" }
-local nix_shells = { "/opt/fish/fish", "/usr/bin/fish", "/bin/bash", "/bin/sh" }
-local interactive_shell = is_windows and find_best_shell(win_shells) or find_best_shell(nix_shells)
+local platform = require("config.platform")
 
 return {
   "folke/snacks.nvim",
@@ -27,18 +14,18 @@ return {
     -- ============================================
     -- CORE FEATURES
     -- ============================================
-    
+
     -- File explorer (replaces netrw)
-    explorer = { 
+    explorer = {
       enabled = true,
       replace_netrw = true,
       hidden = true, -- Show hidden files by default
     },
-    
+
     -- Floating terminal
-    terminal = { 
+    terminal = {
       enabled = true,
-      shell = interactive_shell,
+      shell = platform.interactive_shell,
       win = {
         style = "float",
         width = 0.9,
@@ -46,48 +33,48 @@ return {
         border = "rounded",
       },
     },
-    
+
     -- Smooth scrolling
-    scroll = { 
+    scroll = {
       enabled = true,
       animate = {
         duration = {
-          step = 10,   -- Duration of each frame in ms.    Default: 15  (lower = smoother but more frames) 
+          step = 10,   -- Duration of each frame in ms.    Default: 15  (lower = smoother but more frames)
           total = 100, -- Total animation duration in ms.  Default: 250 (lower = faster)
         },
       },
     },
-    
+
     -- Beautiful notifications
-    notifier = { 
+    notifier = {
       enabled = true,
       timeout = 3000,
     },
-    
+
     -- Modern input prompts
-    input = { 
+    input = {
       enabled = true,
     },
-    
+
     -- Status column (git signs, diagnostics, etc.)
-    statuscolumn = { 
+    statuscolumn = {
       enabled = true,
     },
-    
+
     -- ============================================
     -- PICKER (Telescope replacement)
     -- ============================================
-    
+
     picker = {
       enabled = true,
-      
+
       -- Show hidden files, respect .gitignore
       sources = {
-        files = { 
+        files = {
           hidden = true,
           follow_symlinks = true,
         },
-        
+
         -- THIS IS THE EXPLORER CONFIG - FLOATING WINDOW
         explorer = {
           hidden = true,
@@ -103,41 +90,41 @@ return {
           },
         },
       },
-      
+
       -- FZF-style fuzzy matching
-      matcher = { 
-        fuzzy = true, 
+      matcher = {
+        fuzzy = true,
         fzf = true,
       },
-      
+
       -- Modern UI
-      layout = { 
+      layout = {
         preset = "telescope",
       },
-      
+
       -- Better file display
       formatters = {
         file = {
           filename_first = true,
         },
       },
-      
+
       -- Performance: limit preview size
       previewers = {
         enabled = true,
         max_file_size = 1024 * 100, -- 100KB
       },
     },
-    
+
     -- ============================================
     -- PERFORMANCE FEATURES
     -- ============================================
-    
+
     -- Fast file opening (defers expensive operations)
-    quickfile = { 
+    quickfile = {
       enabled = true,
     },
-    
+
     -- Handle large files gracefully
     bigfile = {
       enabled = true,
@@ -148,19 +135,19 @@ return {
         vim.opt_local.spell = false
       end,
     },
-    
+
     -- ============================================
     -- EDITOR ENHANCEMENTS
     -- ============================================
-    
+
     -- Highlight word under cursor
-    words = { 
+    words = {
       enabled = true,
       debounce = 100,
     },
-    
+
     -- Indent guides
-    indent = { 
+    indent = {
       enabled = true,
       indent = {
         enabled = true,
@@ -171,7 +158,7 @@ return {
         char = "│",
       },
     },
-    
+
     -- Scratch buffers for quick notes/testing
     scratch = {
       enabled = true,
@@ -186,13 +173,13 @@ return {
         count = true,
       },
     },
-    
+
     -- Zen mode for focus
     zen = {
       enabled = true,
       -- Use default window sizing - it works great
     },
-    
+
     -- Toggle common editor options easily
     toggle = {
       enabled = true,
@@ -229,28 +216,28 @@ return {
       },
     },
   },
-  
+
   -- ============================================
   -- KEYMAPS
   -- ============================================
-  
+
   keys = {
     -- ──────────────────────────────────────────
     -- CORE NAVIGATION
     -- ──────────────────────────────────────────
-    
+
     -- File explorer
     { "<leader>e", function() Snacks.explorer() end, desc = "Explorer" },
-    
+
     -- Terminal
     { "<leader>t", function() Snacks.terminal.toggle() end, mode = { "n", "t" }, desc = "Terminal" },
     { "<C-/>", function() Snacks.terminal.toggle() end, mode = { "n", "t" }, desc = "Terminal (Quick)" },
     { "<C-_>", function() Snacks.terminal.toggle() end, mode = { "n", "t" }, desc = "Terminal (Alternative)" },
-    
+
     -- ──────────────────────────────────────────
     -- FINDER (TELESCOPE REPLACEMENT)
     -- ──────────────────────────────────────────
-    
+
     { "<leader>ff", function() Snacks.picker.files() end, desc = "Find Files" },
     { "<leader>fg", function() Snacks.picker.grep() end, desc = "Find Grep" },
     { "<leader>fb", function() Snacks.picker.buffers() end, desc = "Find Buffers" },
@@ -259,12 +246,12 @@ return {
     { "<leader>fw", function() Snacks.picker.grep_word() end, desc = "Find Word" },
     { "<leader>fc", function() Snacks.picker.commands() end, desc = "Find Commands" },
     { "<leader>fk", function() Snacks.picker.keymaps() end, desc = "Find Keymaps" },
-    
+
     -- Special searches (keep <leader>s prefix for these)
     { "<leader>sr", function() Snacks.picker.registers() end, desc = "Search Registers" },
     { "<leader>sm", function() Snacks.picker.marks() end, desc = "Search Marks" },
     { "<leader>sj", function() Snacks.picker.jumps() end, desc = "Search Jumps" },
-    
+
     -- ──────────────────────────────────────────
     -- LSP INTEGRATION
     -- ──────────────────────────────────────────
@@ -275,33 +262,33 @@ return {
     { "<leader>cs", function() Snacks.picker.lsp_document_symbols() end, desc = "Document Symbols" },
     { "<leader>cS", function() Snacks.picker.lsp_workspace_symbols() end, desc = "Workspace Symbols" },
     { "<leader>cd", function() Snacks.picker.diagnostics() end, desc = "Diagnostics" },
-    
+
     -- Word navigation (jump between references)
     { "]]", function() Snacks.words.jump(1, true) end, desc = "Next Reference" },
     { "[[", function() Snacks.words.jump(-1, true) end, desc = "Prev Reference" },
-    
+
     -- ──────────────────────────────────────────
     -- PRODUCTIVITY
     -- ──────────────────────────────────────────
-    
+
     -- Scratch buffer
     { "<leader>.", function() Snacks.scratch() end, desc = "Scratch Buffer" },
     { "<leader>S", function() Snacks.scratch.select() end, desc = "Select Scratch" },
-    
+
     -- Zen mode
     { "<leader>z", function() Snacks.zen() end, desc = "Zen Mode" },
     { "<leader>Z", function() Snacks.zen.zoom() end, desc = "Zoom" },
-    
+
     -- ──────────────────────────────────────────
     -- NOTIFICATIONS & BUFFER MANAGEMENT
     -- ──────────────────────────────────────────
-    
+
     { "<leader>un", function() Snacks.notifier.hide() end, desc = "Dismiss Notifications" },
     { "<leader>nh", function() Snacks.notifier.show_history() end, desc = "Notification History" },
-    
+
     { "<leader>bd", function() Snacks.bufdelete() end, desc = "Delete Buffer" },
     { "<leader>bo", function() Snacks.bufdelete.other() end, desc = "Delete Other Buffers" },
-    
+
     -- ──────────────────────────────────────────
     -- TOGGLES (UI OPTIONS)
     -- ──────────────────────────────────────────
@@ -311,7 +298,7 @@ return {
     -- { "<leader>ul", function() Snacks.toggle.option("number", { name = "Line Numbers" }):toggle() end, desc = "Toggle Line Numbers" },
     -- { "<leader>ur", function() Snacks.toggle.option("relativenumber", { name = "Relative Numbers" }):toggle() end, desc = "Toggle Relative Numbers" },
     { "<leader>ubl", function() Snacks.toggle.line_number():toggle() end, desc = "Toggle Line Numbers" },
-    
+
     -- DIAGNOSTICS
     { "<leader>ud", function() Snacks.toggle.diagnostics():toggle() end, desc = "Toggle Diagnostics" },
 
