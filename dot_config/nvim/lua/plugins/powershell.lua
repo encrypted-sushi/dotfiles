@@ -1,5 +1,5 @@
 -- ~/.config/nvim/lua/plugins/powershell.lua
-local platform = require("config.platform")
+local platform = require("config.platform_detection.platform")
 
 if platform.is_windows then
   return {
