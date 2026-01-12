@@ -1,6 +1,22 @@
 -- ~/.config/nvim/lua/plugins/nvim-treesitter.lua
 -- Shared parser compilation across WSL and containers
 
+-- Environment detection (done once at module load)
+local is_windows = vim.fn.has("win32") == 1
+local is_wsl = vim.fn.has("wsl") == 1
+local is_container = vim.fn.filereadable("/.dockerenv") == 1 or
+                     vim.fn.filereadable("/run/.containerenv") == 1
+
+local function detect_libc()
+  if is_windows then return nil end
+  local ldd_output = vim.fn.system("ldd --version 2>&1")
+  if ldd_output:match("musl") then return "musl"
+  elseif ldd_output:match("GLIBC") or ldd_output:match("glibc") then return "glibc"
+  else return "unknown" end
+end
+
+local libc = detect_libc()
+
 return {
   "nvim-treesitter/nvim-treesitter",
   branch = "main",
@@ -8,62 +24,38 @@ return {
 
   opts = function()
     -- Set parser directory early (before plugin loads)
-    local is_windows = vim.fn.has("win32") == 1
-    
     if not is_windows then
-      local is_container = vim.fn.filereadable("/.dockerenv") == 1 or
-                           vim.fn.filereadable("/run/.containerenv") == 1
-      
-      local function detect_libc()
-        local ldd_output = vim.fn.system("ldd --version 2>&1")
-        if ldd_output:match("musl") then return "musl"
-        elseif ldd_output:match("GLIBC") or ldd_output:match("glibc") then return "glibc"
-        else return "unknown" end
-      end
-      
-      local libc = detect_libc()
       local parser_base = is_container and "/opt/nvim-parsers" or vim.fn.expand("$HOME/.local/share/nvim-parsers")
       local parser_dir = parser_base .. "/" .. libc
-      
+
       vim.fn.mkdir(parser_dir .. "/parser", "p")
       
+      -- Add parser directory to runtime path so Neovim can find parsers
+      vim.opt.rtp:prepend(parser_dir)
+
       return { install_dir = parser_dir }
     end
-    
+
     return {}
   end,
 
   config = function(_, opts)
     require('nvim-treesitter').setup(opts)
-    
+
     local install = require("nvim-treesitter.install")
-    
+
     -- Explicitly set parser_install_dir from opts
     if opts.install_dir then
       install.parser_install_dir = opts.install_dir
     end
-    
-    local is_windows = vim.fn.has("win32") == 1
-    local is_wsl = vim.fn.has("wsl") == 1
-    local is_container = vim.fn.filereadable("/.dockerenv") == 1 or
-                         vim.fn.filereadable("/run/.containerenv") == 1
-
-    local function detect_libc()
-      if is_windows then return nil end
-      local ldd_output = vim.fn.system("ldd --version 2>&1")
-      if ldd_output:match("musl") then return "musl"
-      elseif ldd_output:match("GLIBC") or ldd_output:match("glibc") then return "glibc"
-      else return "unknown" end
-    end
-
-    local libc = detect_libc()
 
     if is_windows then
       -- Windows: Use Zig to bypass MSVC
-      local config_path = vim.fn.stdpath("config")
+      local bin_dir = vim.fn.stdpath("cache") .. "\\bin"
+      vim.fn.mkdir(bin_dir, "p")
 
       local function create_wrapper(name, subcommand)
-        local path = config_path .. "\\" .. name .. ".bat"
+        local path = bin_dir .. "\\" .. name .. ".bat"
         local f = io.open(path, "w")
         if f then
           f:write("@echo off\nzig " .. subcommand .. " %* -target x86_64-windows-gnu")
@@ -103,7 +95,7 @@ return {
 
       local zig_target = libc == "musl" and "x86_64-linux-musl" or "x86_64-linux-gnu"
       local zig_wrapper = "/tmp/zig-cc-wrapper-" .. libc .. ".sh"
-      
+
       local f = io.open(zig_wrapper, "w")
       if f then
         f:write("#!/bin/sh\n")
@@ -138,14 +130,15 @@ return {
       local f = io.open(wrapper_path, "w")
       if f then
         f:write("#!/bin/sh\n\n")
-        
-        -- Compiler mode: strip conflicting targets, force correct one
+
+        -- Compiler mode: strip tree-sitter-cli's target, use ours
+        -- Note: Unlike Windows, appending doesn't work reliably here
         f:write('if [ "$(basename "$0")" = "cc" ]; then\n')
         f:write('  args=$(echo "$@" | sed "s/-target [^ ]*//g")\n')
         f:write('  exec /opt/bin/zig cc -target ' .. zig_target .. ' $args\n')
         f:write("fi\n\n")
 
-        -- Tree-sitter CLI mode: ignore verification panics
+        -- Tree-sitter CLI mode: ignore verification panics from static binary
         f:write('/opt/bin/tree-sitter "$@"\n')
         f:write("exit 0\n")
         f:close()
@@ -186,10 +179,10 @@ return {
         vim.notify("Treesitter: parser_install_dir not set, skipping auto-install", vim.log.levels.WARN)
         return
       end
-      
+
       local install_mod = require("nvim-treesitter.install")
       local parser_base = install.parser_install_dir or (vim.fn.stdpath('data') .. '/site')
-      
+
       for _, lang in ipairs(all_languages) do
         local parser_path = parser_base .. "/parser/" .. lang .. ".so"
         if vim.fn.filereadable(parser_path) == 0 then
