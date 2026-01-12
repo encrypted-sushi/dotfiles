@@ -1,4 +1,4 @@
--- ~/.config/nvim/lua/config/platform.lua
+-- ~/.config/nvim/lua/config/platform_detection/platform.lua
 -- Centralized platform detection for all config files
 
 local M = {}
