@@ -1,37 +1,69 @@
+-- lua/config/core/options.lua
+local platform = require("config.platform_detection.platform")
 local o = vim.opt
-local is_windows = vim.fn.has("win32") == 1
 
+-- ============================================
+-- PLATFORM-SPECIFIC CONFIGURATION
+-- ============================================
 
-if is_windows then
+if platform.is_windows then
   -- [[ Windows and the infamous(?) ShaDa ]]
   -- Fix ShaDa "All tmp files exist" error on Windows
-  vim.opt.shada = "!,'100,<50,s10,h"
+  o.shada = "!,'100,<50,s10,h"
 
   -- This is the "Nuclear" fix if the error persists:
-  -- It moves the ShaDa file OUT of the AppData/Local folder 
+  -- It moves the ShaDa file OUT of the AppData/Local folder
   -- and into a place Windows/OneDrive won't harass it.
-  -- vim.opt.shadafile = "C:\\temp\\main.shada" -- Only use if the line above fails
+  -- o.shadafile = "C:\\temp\\main.shada" -- Only use if the line above fails
 
   -- The "Plumbing" for Windows: cmd.exe
-  vim.o.shell = "cmd.exe"
-  vim.o.shellcmdflag = "/K set shellslash=1 & cmd.exe /c"
-  vim.o.shellredir = ">%s 2>&1"
-  vim.o.shellpipe = "2>&1 | %s"
-  vim.o.shellquote = ""
-  vim.o.shellxquote = ""
+  o.shell = "cmd.exe"
+  o.shellcmdflag = "/K set shellslash=1 & cmd.exe /c"
+  o.shellredir = ">%s 2>&1"
+  o.shellpipe = "2>&1 | %s"
+  o.shellquote = ""
+  o.shellxquote = ""
+
+elseif platform.is_wsl then
+  -- The "Plumbing" for WSL: sh
+  o.shell = "/bin/sh"
+
+  -- Fix for OSC52 clipboard paste hangs in WSL
+  vim.g.clipboard = {
+    name = 'WslClipboard',
+    copy = {
+      ['+'] = 'clip.exe',
+      ['*'] = 'clip.exe',
+    },
+    paste = {
+      ['+'] = 'pwsh.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
+      ['*'] = 'pwsh.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
+    },
+    cache_enabled = 0,
+  }
+
 else
-  -- The "Plumbing" for Linux/WSL: sh
-  vim.o.shell = "/bin/sh"
+  -- The "Plumbing" for Linux/Containers: sh
+  o.shell = "/bin/sh"
 end
 
--- [[ File Formats ]]
+-- ============================================
+-- FILE FORMATS
+-- ============================================
+
 o.fileformats = "unix,dos"
 
--- [[ Line numbers ]]
+-- ============================================
+-- LINE NUMBERS
+-- ============================================
+
 o.number = true
 o.relativenumber = true
 
--- [[ Tab/Indent ]]
+-- ============================================
+-- TAB/INDENT
+-- ============================================
+
 o.expandtab = true
 o.tabstop = 2
 o.softtabstop = 2
@@ -39,32 +71,45 @@ o.shiftwidth = 2
 o.smartindent = true
 o.autoindent = true
 
--- [[ Search ]]
-vim.opt.ignorecase = true
-vim.opt.smartcase = true
-vim.opt.hlsearch = true
-vim.opt.incsearch = true
+-- ============================================
+-- SEARCH
+-- ============================================
 
--- [[ UI ]]
-vim.opt.termguicolors = true
-vim.opt.signcolumn = "yes"
-vim.opt.cursorline = true
-vim.opt.scrolloff = 8
-vim.opt.sidescrolloff = 8
+o.ignorecase = true
+o.smartcase = true
+o.hlsearch = true
+o.incsearch = true
 
--- [[ File handling ]]
+-- ============================================
+-- UI
+-- ============================================
+
+o.termguicolors = true
+o.signcolumn = "yes"
+o.cursorline = true
+o.scrolloff = 8
+o.sidescrolloff = 8
+
+-- ============================================
+-- FILE HANDLING
+-- ============================================
+
 local undodir = vim.fn.stdpath("data") .. "/undo"
 vim.fn.mkdir(undodir, "p")
-vim.opt.undodir = undodir
-vim.opt.undofile = true
-vim.opt.swapfile = false
-vim.opt.backup = false
-vim.opt.fsync = false
+o.undodir = undodir
+o.undofile = true
+o.swapfile = false
+o.backup = false
+o.fsync = false
 
--- Completion
-vim.opt.completeopt = "menu,menuone,noselect"
+-- ============================================
+-- COMPLETION
+-- ============================================
 
--- Mouse
-vim.opt.mouse = "a"
+o.completeopt = "menu,menuone,noselect"
 
+-- ============================================
+-- MOUSE
+-- ============================================
 
+o.mouse = "a"
