@@ -1,21 +1,7 @@
 -- ~/.config/nvim/lua/plugins/nvim-treesitter.lua
 -- Shared parser compilation across WSL and containers
 
--- Environment detection (done once at module load)
-local is_windows = vim.fn.has("win32") == 1
-local is_wsl = vim.fn.has("wsl") == 1
-local is_container = vim.fn.filereadable("/.dockerenv") == 1 or
-                     vim.fn.filereadable("/run/.containerenv") == 1
-
-local function detect_libc()
-  if is_windows then return nil end
-  local ldd_output = vim.fn.system("ldd --version 2>&1")
-  if ldd_output:match("musl") then return "musl"
-  elseif ldd_output:match("GLIBC") or ldd_output:match("glibc") then return "glibc"
-  else return "unknown" end
-end
-
-local libc = detect_libc()
+local platform = require("config.platform_detection.platform")
 
 return {
   "nvim-treesitter/nvim-treesitter",
@@ -24,9 +10,10 @@ return {
 
   opts = function()
     -- Set parser directory early (before plugin loads)
-    if not is_windows then
-      local parser_base = is_container and "/opt/nvim-parsers" or vim.fn.expand("$HOME/.local/share/nvim-parsers")
-      local parser_dir = parser_base .. "/" .. libc
+    if not platform.is_windows then
+      local parser_base = platform.is_container and "/opt/nvim-parsers" 
+                          or vim.fn.expand("$HOME/.local/share/nvim-parsers")
+      local parser_dir = parser_base .. "/" .. platform.libc
 
       vim.fn.mkdir(parser_dir .. "/parser", "p")
       
@@ -49,7 +36,11 @@ return {
       install.parser_install_dir = opts.install_dir
     end
 
-    if is_windows then
+    -- Prevent ftplugins from auto-starting treesitter before parsers are ready
+    -- Set this globally to disable auto-start from built-in ftplugins
+    vim.g.ts_highlight_enable = false
+
+    if platform.is_windows then
       -- Windows: Use Zig to bypass MSVC
       local bin_dir = vim.fn.stdpath("cache") .. "\\bin"
       vim.fn.mkdir(bin_dir, "p")
@@ -84,7 +75,7 @@ return {
 
       if vim.fn.isdirectory(parser_dir) == 0 then
         vim.notify(
-          "Treesitter: Missing bind mount: -v ~/.local/share/nvim-parsers/" .. libc .. ":/opt/nvim-parsers/" .. libc .. ":rw",
+          "Treesitter: Missing bind mount: -v ~/.local/share/nvim-parsers/" .. platform.libc .. ":/opt/nvim-parsers/" .. platform.libc .. ":rw",
           vim.log.levels.ERROR
         )
         return
@@ -93,8 +84,8 @@ return {
       vim.env.PATH = "/opt/bin:" .. vim.env.PATH
       vim.env.GIT = "/opt/bin/git"
 
-      local zig_target = libc == "musl" and "x86_64-linux-musl" or "x86_64-linux-gnu"
-      local zig_wrapper = "/tmp/zig-cc-wrapper-" .. libc .. ".sh"
+      local zig_target = platform.libc == "musl" and "x86_64-linux-musl" or "x86_64-linux-gnu"
+      local zig_wrapper = "/tmp/zig-cc-wrapper-" .. platform.libc .. ".sh"
 
       local f = io.open(zig_wrapper, "w")
       if f then
@@ -109,18 +100,18 @@ return {
       install.auto_install = true
       install.prefer_git = true
 
-      vim.notify("Treesitter: Container (" .. libc .. ") -> " .. parser_dir, vim.log.levels.INFO)
+      vim.notify("Treesitter: Container (" .. platform.libc .. ") -> " .. parser_dir, vim.log.levels.INFO)
 
-    elseif is_wsl then
+    elseif platform.is_wsl then
       -- WSL: Use static tools from /opt/bin
-      local parser_dir = vim.fn.expand("$HOME/.local/share/nvim-parsers") .. "/" .. libc
+      local parser_dir = vim.fn.expand("$HOME/.local/share/nvim-parsers") .. "/" .. platform.libc
 
       if vim.fn.isdirectory("/opt/bin") == 0 then
         vim.notify("Treesitter: /opt/bin not found", vim.log.levels.ERROR)
         return
       end
 
-      local zig_target = (libc == "musl") and "x86_64-linux-musl" or "x86_64-linux-gnu"
+      local zig_target = (platform.libc == "musl") and "x86_64-linux-musl" or "x86_64-linux-gnu"
       local bin_dir = vim.fn.stdpath("cache") .. "/bin"
       local wrapper_path = bin_dir .. "/ts-zig-wrapper"
 
@@ -175,7 +166,7 @@ return {
     -- Auto-install missing parsers
     local function install_missing()
       -- Skip if no custom install dir (Windows uses default)
-      if not is_windows and not install.parser_install_dir then
+      if not platform.is_windows and not install.parser_install_dir then
         vim.notify("Treesitter: parser_install_dir not set, skipping auto-install", vim.log.levels.WARN)
         return
       end
