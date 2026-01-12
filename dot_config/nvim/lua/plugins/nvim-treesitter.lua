@@ -11,12 +11,10 @@ return {
   opts = function()
     -- Set parser directory early (before plugin loads)
     if not platform.is_windows then
-      local parser_base = platform.is_container and "/opt/nvim-parsers" 
-                          or vim.fn.expand("$HOME/.local/share/nvim-parsers")
-      local parser_dir = parser_base .. "/" .. platform.libc
+      local parser_dir = vim.fn.expand("$HOME/.local/share/nvim-parsers") .. "/" .. platform.libc
 
       vim.fn.mkdir(parser_dir .. "/parser", "p")
-      
+
       -- Add parser directory to runtime path so Neovim can find parsers
       vim.opt.rtp:prepend(parser_dir)
 
@@ -39,6 +37,66 @@ return {
     -- Prevent ftplugins from auto-starting treesitter before parsers are ready
     -- Set this globally to disable auto-start from built-in ftplugins
     vim.g.ts_highlight_enable = false
+
+    -- ============================================
+    -- HELPER: Setup *nix environment (WSL/Container)
+    -- ============================================
+    local function setup_nix_environment(parser_dir)
+      -- Verify parser directory exists
+      if vim.fn.isdirectory(parser_dir) == 0 then
+        vim.notify("Treesitter: Parser directory not found: " .. parser_dir, vim.log.levels.ERROR)
+        return false
+      end
+
+      -- Verify /opt/bin exists
+      if vim.fn.isdirectory("/opt/bin") == 0 then
+        vim.notify("Treesitter: /opt/bin not found", vim.log.levels.ERROR)
+        return false
+      end
+
+      local zig_target = (platform.libc == "musl") and "x86_64-linux-musl" or "x86_64-linux-gnu"
+      local bin_dir = vim.fn.stdpath("cache") .. "/bin"
+      local wrapper_path = bin_dir .. "/ts-zig-wrapper"
+
+      vim.fn.mkdir(bin_dir, "p")
+
+      -- Unified wrapper for 'cc' and 'tree-sitter'
+      local f = io.open(wrapper_path, "w")
+      if f then
+        f:write("#!/bin/sh\n\n")
+
+        -- Compiler mode: strip tree-sitter-cli's target, use ours
+        f:write('if [ "$(basename "$0")" = "cc" ]; then\n')
+        f:write('  args=$(echo "$@" | sed "s/-target [^ ]*//g")\n')
+        f:write('  exec /opt/bin/zig cc -target ' .. zig_target .. ' $args\n')
+        f:write("fi\n\n")
+
+        -- Tree-sitter CLI mode: ignore verification panics from static binary
+        f:write('/opt/bin/tree-sitter "$@"\n')
+        f:write("exit 0\n")
+        f:close()
+        vim.fn.system("chmod +x " .. vim.fn.shellescape(wrapper_path))
+      end
+
+      vim.fn.system("ln -sf " .. wrapper_path .. " " .. bin_dir .. "/cc")
+      vim.fn.system("ln -sf " .. wrapper_path .. " " .. bin_dir .. "/tree-sitter")
+
+      vim.env.PATH = bin_dir .. ":/opt/bin:" .. vim.env.PATH
+      vim.env.CC = bin_dir .. "/cc"
+      vim.env.GIT = "/opt/bin/git"
+
+      install.compilers = { bin_dir .. "/cc" }
+      install.prefer_git = true
+      install.auto_install = true
+
+      local env_type = platform.is_container and "Container" or "WSL"
+      vim.notify("Treesitter: " .. env_type .. " (" .. platform.libc .. ") -> " .. parser_dir, vim.log.levels.INFO)
+      return true
+    end
+
+    -- ============================================
+    -- PLATFORM-SPECIFIC CONFIGURATION
+    -- ============================================
 
     if platform.is_windows then
       -- Windows: Use Zig to bypass MSVC
@@ -69,91 +127,19 @@ return {
       install.compilers = { cc_path, cxx_path }
       vim.notify("Treesitter: Windows (local parsers)", vim.log.levels.INFO)
 
-    elseif is_container then
-      -- Containers: Use bind-mounted tools and shared parsers
-      local parser_dir = "/opt/nvim-parsers/" .. libc
-
-      if vim.fn.isdirectory(parser_dir) == 0 then
-        vim.notify(
-          "Treesitter: Missing bind mount: -v ~/.local/share/nvim-parsers/" .. platform.libc .. ":/opt/nvim-parsers/" .. platform.libc .. ":rw",
-          vim.log.levels.ERROR
-        )
-        return
-      end
-
-      vim.env.PATH = "/opt/bin:" .. vim.env.PATH
-      vim.env.GIT = "/opt/bin/git"
-
-      local zig_target = platform.libc == "musl" and "x86_64-linux-musl" or "x86_64-linux-gnu"
-      local zig_wrapper = "/tmp/zig-cc-wrapper-" .. platform.libc .. ".sh"
-
-      local f = io.open(zig_wrapper, "w")
-      if f then
-        f:write("#!/bin/sh\n")
-        f:write('exec /opt/bin/zig cc -target ' .. zig_target .. ' "$@"\n')
-        f:close()
-        vim.fn.system("chmod +x " .. vim.fn.shellescape(zig_wrapper))
-      end
-
-      vim.env.CC = zig_wrapper
-      install.compilers = { zig_wrapper }
-      install.auto_install = true
-      install.prefer_git = true
-
-      vim.notify("Treesitter: Container (" .. platform.libc .. ") -> " .. parser_dir, vim.log.levels.INFO)
-
-    elseif platform.is_wsl then
-      -- WSL: Use static tools from /opt/bin
+    elseif platform.is_wsl or platform.is_container then
+      -- WSL/Container: Use static tools from /opt/bin and shared parsers
       local parser_dir = vim.fn.expand("$HOME/.local/share/nvim-parsers") .. "/" .. platform.libc
-
-      if vim.fn.isdirectory("/opt/bin") == 0 then
-        vim.notify("Treesitter: /opt/bin not found", vim.log.levels.ERROR)
-        return
-      end
-
-      local zig_target = (platform.libc == "musl") and "x86_64-linux-musl" or "x86_64-linux-gnu"
-      local bin_dir = vim.fn.stdpath("cache") .. "/bin"
-      local wrapper_path = bin_dir .. "/ts-zig-wrapper"
-
-      vim.fn.mkdir(bin_dir, "p")
-
-      -- Unified wrapper for 'cc' and 'tree-sitter'
-      local f = io.open(wrapper_path, "w")
-      if f then
-        f:write("#!/bin/sh\n\n")
-
-        -- Compiler mode: strip tree-sitter-cli's target, use ours
-        -- Note: Unlike Windows, appending doesn't work reliably here
-        f:write('if [ "$(basename "$0")" = "cc" ]; then\n')
-        f:write('  args=$(echo "$@" | sed "s/-target [^ ]*//g")\n')
-        f:write('  exec /opt/bin/zig cc -target ' .. zig_target .. ' $args\n')
-        f:write("fi\n\n")
-
-        -- Tree-sitter CLI mode: ignore verification panics from static binary
-        f:write('/opt/bin/tree-sitter "$@"\n')
-        f:write("exit 0\n")
-        f:close()
-        vim.fn.system("chmod +x " .. vim.fn.shellescape(wrapper_path))
-      end
-
-      vim.fn.system("ln -sf " .. wrapper_path .. " " .. bin_dir .. "/cc")
-      vim.fn.system("ln -sf " .. wrapper_path .. " " .. bin_dir .. "/tree-sitter")
-
-      vim.env.PATH = bin_dir .. ":/opt/bin:" .. vim.env.PATH
-      vim.env.CC = bin_dir .. "/cc"
-      vim.env.GIT = "/opt/bin/git"
-
-      install.compilers = { bin_dir .. "/cc" }
-      install.prefer_git = true
-      install.auto_install = true
-
-      vim.notify("Treesitter: WSL (" .. platform.libc .. ") -> " .. parser_dir, vim.log.levels.INFO)
+      setup_nix_environment(parser_dir)
 
     else
       vim.notify("Treesitter: Unknown environment", vim.log.levels.WARN)
     end
 
-    -- Language configuration
+    -- ============================================
+    -- LANGUAGE CONFIGURATION
+    -- ============================================
+
     local base_languages = {
       "lua", "vim", "vimdoc", "query", "markdown", "markdown_inline",
     }
@@ -163,7 +149,10 @@ return {
 
     install.ensure_installed = all_languages
 
-    -- Auto-install missing parsers
+    -- ============================================
+    -- AUTO-INSTALL MISSING PARSERS
+    -- ============================================
+
     local function install_missing()
       -- Skip if no custom install dir (Windows uses default)
       if not platform.is_windows and not install.parser_install_dir then
@@ -192,7 +181,10 @@ return {
 
     vim.defer_fn(install_missing, 1000)
 
-    -- Syntax highlighting activation
+    -- ============================================
+    -- SYNTAX HIGHLIGHTING ACTIVATION
+    -- ============================================
+
     vim.api.nvim_create_autocmd("FileType", {
       pattern = "*",
       callback = function()
