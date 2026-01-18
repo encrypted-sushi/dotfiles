@@ -127,10 +127,10 @@ return {
       install.compilers = { cc_path, cxx_path }
       vim.notify("Treesitter: Windows (local parsers)", vim.log.levels.INFO)
 
-    elseif platform.is_wsl or platform.is_container then
+    --elseif platform.is_wsl or platform.is_container then
       -- WSL/Container: Use static tools from /opt/bin and shared parsers
-      local parser_dir = vim.fn.expand("$HOME/.local/share/nvim-parsers") .. "/" .. platform.libc
-      setup_nix_environment(parser_dir)
+      -- local parser_dir = vim.fn.expand("$HOME/.local/share/nvim-parsers") .. "/" .. platform.libc
+      -- setup_nix_environment(parser_dir)
 
     else
       vim.notify("Treesitter: Unknown environment", vim.log.levels.WARN)
@@ -179,7 +179,7 @@ return {
       end
     end
 
-    vim.defer_fn(install_missing, 1000)
+    --vim.defer_fn(install_missing, 1000)
 
     -- ============================================
     -- SYNTAX HIGHLIGHTING ACTIVATION

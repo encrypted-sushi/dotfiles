@@ -57,8 +57,10 @@ return {
     },
 
     -- Status column (git signs, diagnostics, etc.)
+    -- NOTE: Disabling for now, as it seem to be misconfigured, and line numbers aren't being displayed
     statuscolumn = {
-      enabled = true,
+      --enabled = true,
+      enabled = false,
     },
 
     -- ============================================
