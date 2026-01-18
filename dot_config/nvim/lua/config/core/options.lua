@@ -85,7 +85,13 @@ o.incsearch = true
 -- ============================================
 
 o.termguicolors = true
-o.signcolumn = "yes"
+o.signcolumn = "yes"  -- We need to use native, as Snacks statuscolumn doesn't work, according to Claude Sonnet 4.5
+-- Also part of sign/status column + line number configurations
+vim.diagnostic.config({
+  virtual_text = true,
+  signs = true,
+  underline = true,
+})
 o.cursorline = true
 o.scrolloff = 8
 o.sidescrolloff = 8

@@ -57,19 +57,19 @@ return {
     },
 
     -- Status column (git signs, diagnostics, etc.)
-    -- NOTE: Disabling for now, as it seem to be misconfigured, and line numbers aren't being displayed
     statuscolumn = {
-      --enabled = true,
+      -- This, according to Claude Sonnet 4.5, need to be disabled for stuff to actually work.
+      -- Claude confirmed this is how LazyNvim does things.
+      -- Let Neovim's native statuscolumn and line numbers to be used (vim.o need to be configured instead)
       enabled = false,
     },
 
     -- ============================================
     -- PICKER (Telescope replacement)
     -- ============================================
-
     picker = {
       enabled = true,
-
+      
       -- Show hidden files, respect .gitignore
       sources = {
         files = {
