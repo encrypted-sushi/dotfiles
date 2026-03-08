@@ -4,6 +4,7 @@ tools:
   shellcheck: &shellcheck
     lint-command: "shellcheck --shell=sh --format=gcc -"
     lint-stdin: true
+    lint-after-open: true
     lint-formats:
       - "%f:%l:%c: %t%*[^:]: %m"
       - "%f:%l:%c: %t%*[^:]: %m [SC%n]"
