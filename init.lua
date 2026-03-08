@@ -33,29 +33,10 @@ require("catppuccin").setup({
 
 vim.cmd.colorscheme("catppuccin")
 
-require("mini.statusline").setup({
-  use_icons = true,
-  set_vim_settings = true,
+require("mini.pick").setup({ 
+  source = { tool = "rg", },
+  window = { preview = true, }, 
 })
-
-require("mini.icons").setup()
-require("mini.pick").setup({
-    source = { tool = "rg" },
-    window = {
-        config = function()
-            local width = math.floor(vim.o.columns * 0.8)
-            local height = math.floor(vim.o.lines * 0.5)
-            return {
-                relative = "editor",
-                width = width,
-                height = height,
-                row = (math.floor((vim.o.lines - height) / 2)) + height,
-                col = math.floor((vim.o.columns - width) / 2),
-            }
-        end,
-    },
-})
-
 require("mini.extra").setup()
 require("mini.notify").setup()
 require("mini.files").setup()
@@ -64,12 +45,11 @@ vim.keymap.set("n", "<leader>ff",  function() MiniPick.builtin.files()       end
 vim.keymap.set("n", "<leader>fb",  function() MiniPick.builtin.buffers()     end,  { desc = "Find buffers" })
 vim.keymap.set("n", "<leader>fg",  function() MiniPick.builtin.grep_live()   end,  { desc = "Live grep" })
 vim.keymap.set("n", "<leader>fd",  function() MiniExtra.pickers.diagnostic() end,  { desc = "Diagnostics" })
-vim.keymap.set("t", "<Space>", "<Space>", { nowait = true })
 
 local function float_term()
     local buf = vim.api.nvim_create_buf(false, true)
-    local width = math.floor(vim.o.columns * 0.95)
-    local height = math.floor(vim.o.lines * 0.95)
+    local width = math.floor(vim.o.columns * 0.8)
+    local height = math.floor(vim.o.lines * 0.8)
     local row = math.floor((vim.o.lines - height) / 2)
     local col = math.floor((vim.o.columns - width) / 2)
     vim.api.nvim_open_win(buf, true, {
@@ -151,47 +131,9 @@ vim.keymap.set("n", "<leader>S", scratch, { desc = "Scratch buffer" })
 vim.keymap.set("n", "<leader>so", "<cmd>source $MYVIMRC<cr>", { desc = "Source config" })
 vim.keymap.set({ "n", "v" }, "<leader>y", '"+y', { desc = "Yank to system clipboard" })
 vim.keymap.set("i", "jk", "<Esc>", { desc = "Exit insert mode" })
-vim.keymap.set("n", "<leader>d", vim.diagnostic.open_float, { desc = "Show diagnostic" })
 
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.expandtab = true
 vim.opt.tabstop = 2
 vim.opt.shiftwidth = 2
-
-
-
-
-
-
-vim.diagnostic.config({ virtual_text = true, })
-
--- vim.api.nvim_create_autocmd("User", {
---     pattern = "MiniFilesWindowOpen",
---     callback = function(args)
---         local win_id = args.data.win_id
---         local config = vim.api.nvim_win_get_config(win_id)
---         config.col = math.floor((vim.o.columns - config.width) / 2)
---         config.row = math.floor((vim.o.lines - config.height) / 2)
---         config.relative = "editor"
---         vim.api.nvim_win_set_config(win_id, config)
---     end,
--- })
-
--- vim.keymap.set("n", "<leader>m", function()
---     vim.diagnostic.open_float({ border = "rounded", focus = false })
---     -- find the newly opened float
---     for _, win_id in ipairs(vim.api.nvim_list_wins()) do
---         local config = vim.api.nvim_win_get_config(win_id)
---         if config.relative ~= "" then
---             config.col = math.floor((vim.o.columns - config.width) / 2)
---             config.row = math.floor((vim.o.lines - config.height) / 2)
---             config.relative = "editor"
---             vim.api.nvim_win_set_config(win_id, config)
---             break
---         end
---     end
--- end, { desc = "Show diagnostic" })
-
-
-
