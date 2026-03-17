@@ -1,0 +1,1 @@
+/home/jsaitoh/Projects/Linux/Sfdc/sf.fish
