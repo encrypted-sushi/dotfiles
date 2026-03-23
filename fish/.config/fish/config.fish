@@ -1,7 +1,9 @@
 # ~/.config/fish/config.fish
 
-# Color Theme
-fish_config theme choose catppuccin-mocha --color-theme=dark
+# Source my colors config for various things
+if test -f $HOME/.config/fish/catppuccin-mocha-colors.fish
+    source $HOME/.config/fish/catppuccin-mocha-colors.fish
+end
 
 # Stupid prompt arrow backward fix?
 # https://forum.endeavouros.com/t/solved-fish-prompt-arrow-backwards/77662/6
