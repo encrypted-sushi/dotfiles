@@ -2,36 +2,37 @@ vim.g.mapleader = " "
 local plugins = require("plugins")
 
 local function bootstrap()
-    local cloned = false
-    for _, plugin in ipairs(plugins) do
-        if vim.fn.isdirectory(plugin.path) == 0 then
-            vim.notify("Bootstrapping: " .. plugin.repo, vim.log.levels.INFO)
-            vim.fn.system({
-                "git", "clone", "--depth=1",
-                "https://github.com/" .. plugin.repo,
-                plugin.path,
-            })
-            cloned = true
-        end
+  local cloned = false
+  for _, plugin in ipairs(plugins) do
+    if vim.fn.isdirectory(plugin.path) == 0 then
+      vim.notify("Bootstrapping: " .. plugin.repo, vim.log.levels.INFO)
+      vim.fn.system({
+        "git", "clone", "--depth=1",
+        "https://github.com/" .. plugin.repo,
+        plugin.path,
+      })
+      cloned = true
     end
-    if cloned then
-        vim.notify("Plugins cloned — please restart neovim", vim.log.levels.WARN)
-    end
+  end
+  if cloned then
+    vim.notify("Plugins cloned — please restart neovim", vim.log.levels.WARN)
+  end
 end
 
 bootstrap()
 
 
-require("catppuccin").setup({
-    --flavour = "latte",
-    --flavour = "frappe",
-    --flavour = "macchiato",
-    flavour = "mocha",
-    transparent_background = true,
+-- require("catppuccin").setup({
+--   flavour = "mocha",
+--   transparent_background = true,
+-- })
+-- vim.cmd.colorscheme("catppuccin")
+
+require("kanagawa").setup({ 
+  theme = "wave",
+  transparent = true,
 })
-
-
-vim.cmd.colorscheme("catppuccin")
+vim.cmd.colorscheme("kanagawa-wave")
 
 require("mini.statusline").setup({
   use_icons = true,
@@ -40,20 +41,20 @@ require("mini.statusline").setup({
 
 require("mini.icons").setup()
 require("mini.pick").setup({
-    source = { tool = "rg" },
-    window = {
-        config = function()
-            local width = math.floor(vim.o.columns * 0.8)
-            local height = math.floor(vim.o.lines * 0.5)
-            return {
-                relative = "editor",
-                width = width,
-                height = height,
-                row = (math.floor((vim.o.lines - height) / 2)) + height,
-                col = math.floor((vim.o.columns - width) / 2),
-            }
-        end,
-    },
+  source = { tool = "rg" },
+  window = {
+    config = function()
+      local width = math.floor(vim.o.columns * 0.8)
+      local height = math.floor(vim.o.lines * 0.5)
+      return {
+        relative = "editor",
+        width = width,
+        height = height,
+        row = (math.floor((vim.o.lines - height) / 2)) + height,
+        col = math.floor((vim.o.columns - width) / 2),
+      }
+    end,
+  },
 })
 
 require("mini.extra").setup()
@@ -67,22 +68,22 @@ vim.keymap.set("n", "<leader>fd",  function() MiniExtra.pickers.diagnostic() end
 vim.keymap.set("t", "<Space>", "<Space>", { nowait = true })
 
 local function float_term()
-    local buf = vim.api.nvim_create_buf(false, true)
-    local width = math.floor(vim.o.columns * 0.95)
-    local height = math.floor(vim.o.lines * 0.95)
-    local row = math.floor((vim.o.lines - height) / 2)
-    local col = math.floor((vim.o.columns - width) / 2)
-    vim.api.nvim_open_win(buf, true, {
-        relative = "editor",
-        width = width,
-        height = height,
-        row = row,
-        col = col,
-        style = "minimal",
-        border = "rounded",
-    })
-    vim.fn.termopen(os.getenv("SHELL"))
-    vim.cmd("startinsert")
+  local buf = vim.api.nvim_create_buf(false, true)
+  local width = math.floor(vim.o.columns * 0.95)
+  local height = math.floor(vim.o.lines * 0.95)
+  local row = math.floor((vim.o.lines - height) / 2)
+  local col = math.floor((vim.o.columns - width) / 2)
+  vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = width,
+    height = height,
+    row = row,
+    col = col,
+    style = "minimal",
+    border = "rounded",
+  })
+  vim.fn.termopen(os.getenv("SHELL"))
+  vim.cmd("startinsert")
 end
 
 vim.keymap.set("n", "<leader>t", function() float_term() end, { desc = "Float terminal" })
@@ -93,54 +94,54 @@ vim.keymap.set("n", "<leader>so", "<cmd>source $MYVIMRC<cr>", { desc = "Source c
 local scratch_file = vim.fn.stdpath("data") .. "/scratch.md"
 local scratch_buf = nil
 local function scratch()
-    -- close if already open
-    if scratch_buf and vim.api.nvim_buf_is_valid(scratch_buf) then
-        for _, win in ipairs(vim.api.nvim_list_wins()) do
-            if vim.api.nvim_win_get_buf(win) == scratch_buf then
-                vim.api.nvim_win_close(win, true)
-                return
-            end
-        end
+  -- close if already open
+  if scratch_buf and vim.api.nvim_buf_is_valid(scratch_buf) then
+    for _, win in ipairs(vim.api.nvim_list_wins()) do
+      if vim.api.nvim_win_get_buf(win) == scratch_buf then
+        vim.api.nvim_win_close(win, true)
+        return
+      end
     end
+  end
 
-    scratch_buf = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_open_win(scratch_buf, true, {
-        relative = "editor",
-        width = math.floor(vim.o.columns * 0.8),
-        height = math.floor(vim.o.lines * 0.8),
-        row = math.floor(vim.o.lines * 0.1),
-        col = math.floor(vim.o.columns * 0.1),
-        style = "minimal",
-        border = "rounded",
-    })
-    vim.bo[scratch_buf].buftype = ""
-    vim.bo[scratch_buf].swapfile = false
-    vim.api.nvim_buf_set_name(scratch_buf, scratch_file)
-    if vim.fn.filereadable(scratch_file) == 1 then
-        vim.cmd("edit " .. scratch_file)
-    end
+  scratch_buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_open_win(scratch_buf, true, {
+    relative = "editor",
+    width = math.floor(vim.o.columns * 0.8),
+    height = math.floor(vim.o.lines * 0.8),
+    row = math.floor(vim.o.lines * 0.1),
+    col = math.floor(vim.o.columns * 0.1),
+    style = "minimal",
+    border = "rounded",
+  })
+  vim.bo[scratch_buf].buftype = ""
+  vim.bo[scratch_buf].swapfile = false
+  vim.api.nvim_buf_set_name(scratch_buf, scratch_file)
+  if vim.fn.filereadable(scratch_file) == 1 then
+    vim.cmd("edit " .. scratch_file)
+  end
 end
 
 vim.keymap.set("n", "<leader>S", scratch, { desc = "Scratch buffer" })
 
 local function scratch()
-    local buf = vim.api.nvim_create_buf(false, true)
-    vim.api.nvim_open_win(buf, true, {
-        relative = "editor",
-        width = math.floor(vim.o.columns * 0.8),
-        height = math.floor(vim.o.lines * 0.8),
-        row = math.floor(vim.o.lines * 0.1),
-        col = math.floor(vim.o.columns * 0.1),
-        style = "minimal",
-        border = "rounded",
-    })
-    vim.bo[buf].buftype = ""
-    vim.bo[buf].bufhidden = "hide"
-    vim.bo[buf].swapfile = false
-    vim.api.nvim_buf_set_name(buf, scratch_file)
-    if vim.fn.filereadable(scratch_file) == 1 then
-        vim.cmd("edit " .. scratch_file)
-    end
+  local buf = vim.api.nvim_create_buf(false, true)
+  vim.api.nvim_open_win(buf, true, {
+    relative = "editor",
+    width = math.floor(vim.o.columns * 0.8),
+    height = math.floor(vim.o.lines * 0.8),
+    row = math.floor(vim.o.lines * 0.1),
+    col = math.floor(vim.o.columns * 0.1),
+    style = "minimal",
+    border = "rounded",
+  })
+  vim.bo[buf].buftype = ""
+  vim.bo[buf].bufhidden = "hide"
+  vim.bo[buf].swapfile = false
+  vim.api.nvim_buf_set_name(buf, scratch_file)
+  if vim.fn.filereadable(scratch_file) == 1 then
+    vim.cmd("edit " .. scratch_file)
+  end
 end
 
 require("mini.completion").setup()
