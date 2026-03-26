@@ -1,0 +1,38 @@
+filekinds:
+  normal: {foreground: {Fixed: 250}}
+  directory: {foreground: {RGB: {r: 126, g: 156, b: 216}}}   # wave blue #7e9cd8
+  symlink: {foreground: {RGB: {r: 106, g: 153, b: 85}}}
+  executable: {foreground: {RGB: {r: 118, g: 148, b: 106}}}  # wave green
+
+perms:
+  user_read:    {foreground: {RGB: {r: 126, g: 156, b: 216}}} # wave blue  - read
+  user_write:   {foreground: {RGB: {r: 255, g: 160, b: 102}}} # peach      - write
+  user_exec:    {foreground: {RGB: {r: 118, g: 148, b: 106}}} # wave green - exec
+  group_read:   {foreground: {RGB: {r: 84,  g: 109, b: 151}}} # dim blue
+  group_write:  {foreground: {RGB: {r: 178, g: 112, b: 71}}}  # dim peach
+  group_exec:   {foreground: {RGB: {r: 82,  g: 103, b: 74}}}  # dim green
+  other_read:   {foreground: {RGB: {r: 54,  g: 70,  b: 98}}}  # very dim
+  other_write:  {foreground: {RGB: {r: 54,  g: 70,  b: 98}}}
+  other_exec:   {foreground: {RGB: {r: 54,  g: 70,  b: 98}}}
+ 
+# perms:
+#   user_read:    {foreground: {RGB: {r: 195, g: 64,  b: 67}}}  # samurai red #c34043
+#   user_write:   {foreground: {RGB: {r: 220, g: 215, b: 186}}} # fuji white #dcd7ba
+#   user_exec:    {foreground: {RGB: {r: 118, g: 148, b: 106}}} # wave green #76946a
+#   group_read:   {foreground: {RGB: {r: 114, g: 113, b: 105}}} # muted
+#   group_write:  {foreground: {RGB: {r: 114, g: 113, b: 105}}}
+#   group_exec:   {foreground: {RGB: {r: 114, g: 113, b: 105}}}
+#   other_read:   {foreground: {RGB: {r: 84,  g: 84,  b: 84}}}
+#   other_write:  {foreground: {RGB: {r: 84,  g: 84,  b: 84}}}
+#   other_exec:   {foreground: {RGB: {r: 84,  g: 84,  b: 84}}}
+
+size:
+  number_byte:     {foreground: {RGB: {r: 126, g: 156, b: 216}}} # #7e9cd8
+  number_kibibyte: {foreground: {RGB: {r: 126, g: 156, b: 216}}}
+  number_mebibyte: {foreground: {RGB: {r: 255, g: 160, b: 102}}} # #ffa066 orange
+  number_gibibyte: {foreground: {RGB: {r: 195, g: 64,  b: 67}}}  # red for big files
+
+date:
+  hour_old:   {foreground: {RGB: {r: 114, g: 113, b: 105}}} # muted old dates
+  day_old:    {foreground: {RGB: {r: 150, g: 147, b: 135}}}
+  newer:      {foreground: {RGB: {r: 220, g: 215, b: 186}}} # fuji white for recent

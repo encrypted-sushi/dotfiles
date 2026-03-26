@@ -3,6 +3,34 @@
 # Palette sourced directly from rebelot/kanagawa.nvim colors.lua
 # Structure mirrors catppuccin-mocha-colors.fish
 
+# ─── TERMINAL ANSI PALETTE ───────────────────────────────────────────────────
+# Override the 16 base ANSI colors to Kanagawa Wave values
+# This affects eza, ls, and any tool using raw ANSI colors
+set -g fish_color_normal        $FUJI_WHITE
+set -g __fish_term256 1
+
+# WezTerm / VTE: set ANSI palette via OSC 4 escape sequences
+function _set_ansi_colors
+    printf '\e]4;0;#1F1F28\e\\'   # black      → Sumi Ink3
+    printf '\e]4;1;#C34043\e\\'   # red        → Autumn Red
+    printf '\e]4;2;#76946A\e\\'   # green      → Autumn Green
+    printf '\e]4;3;#C0A36E\e\\'   # yellow     → Boat Yellow
+    printf '\e]4;4;#7E9CD8\e\\'   # blue       → Crystal Blue
+    printf '\e]4;5;#957FB8\e\\'   # magenta    → Oni Violet
+    printf '\e]4;6;#7AA89F\e\\'   # cyan       → Wave Aqua
+    printf '\e]4;7;#DCD7BA\e\\'   # white      → Fuji White
+    printf '\e]4;8;#54546D\e\\'   # br black   → Sumi Ink6
+    printf '\e]4;9;#E46876\e\\'   # br red     → Wave Red
+    printf '\e]4;10;#98BB6C\e\\' # br green   → Spring Green
+    printf '\e]4;11;#E6C384\e\\' # br yellow  → Carp Yellow
+    printf '\e]4;12;#7FB4CA\e\\' # br blue    → Spring Blue
+    printf '\e]4;13;#D27E99\e\\' # br magenta → Sakura Pink
+    printf '\e]4;14;#7AA89F\e\\' # br cyan    → Wave Aqua
+    printf '\e]4;15;#C8C093\e\\' # br white   → Old White
+end
+
+_set_ansi_colors
+
 # ─────────────────────────────────────────────────────────────────────────────
 # PALETTE — WAVE ACCENTS
 # ─────────────────────────────────────────────────────────────────────────────
