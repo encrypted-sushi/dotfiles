@@ -8,6 +8,9 @@ end
 #     source $HOME/.config/fish/catppuccin-mocha-colors.fish
 # end
 
+# Adding to path here so all machines can be synchronized
+fish_add_path "$HOME/.local/bin" "/opt/sbin" "/opt/bin"
+
 # Stupid prompt arrow backward fix?
 # https://forum.endeavouros.com/t/solved-fish-prompt-arrow-backwards/77662/6
 set -gx fish_key_bindings fish_hybrid_key_bindings
