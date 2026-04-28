@@ -13,6 +13,11 @@ vim.lsp.start({
     name     = "zls",
     cmd      = { "zls" },
     root_dir = vim.fs.root(0, { "build.zig", "build.zig.zon", ".git" }),
+    settings = {
+      zls = {
+        zig_lib_path = "/opt/sbin/bundles/zig/0.16.0/lib",
+      }
+    }
 })
 
 -- Buffer-local keymaps — { buffer = 0 } means ONLY active in this zig buffer
@@ -22,6 +27,16 @@ vim.keymap.set("n", "gr",         vim.lsp.buf.references,  { buffer = 0, desc = 
 vim.keymap.set("n", "K",          vim.lsp.buf.hover,       { buffer = 0, desc = "Hover docs" })
 vim.keymap.set("n", "<leader>rn", vim.lsp.buf.rename,      { buffer = 0, desc = "Rename symbol" })
 vim.keymap.set("n", "<leader>ca", vim.lsp.buf.code_action, { buffer = 0, desc = "Code action" })
+vim.keymap.set("n", "<leader>fs", function() MiniExtra.pickers.lsp({ scope = "document_symbol" }) end, { buffer = 0, desc = "File symbols" })
+vim.keymap.set("n", "<leader>fS", function() MiniExtra.pickers.lsp({ scope = "workspace_symbol", query = query }) end, { buffer = 0, desc = "Workspace symbols" })
+vim.keymap.set("n", "<leader>fl", function()
+    require("mini.pick").builtin.grep_live(nil, { 
+      source = {
+        name = "Zig Standard Library",
+        cwd = "/opt/sbin/bundles/zig/0.16.0/lib/",
+      }
+    })
+end, { desc = "Search Zig Standard Library" })
 
 -- Format on save — BufWritePre fires just before the file is written to disk
 -- { buffer = 0 } means this autocmd only fires for THIS buffer, not all zig files forever
