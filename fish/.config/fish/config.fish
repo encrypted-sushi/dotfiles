@@ -15,9 +15,6 @@ fish_add_path "$HOME/.local/bin" "/opt/sbin" "/opt/bin"
 # https://forum.endeavouros.com/t/solved-fish-prompt-arrow-backwards/77662/6
 set -gx fish_key_bindings fish_hybrid_key_bindings
 
-# SSH Agent Socket
-set -gx SSH_AUTH_SOCK $HOME/.ssh/agent.sock
-
 # Eza
 set -gx EZA_ICONS_AUTO 1
 
