@@ -62,7 +62,11 @@ end
 --}}}
 --{{{ 2. Keymaps
 vim.keymap.set("n", "<C-\\>", float_term, { desc = "Toggle float terminal" })-- vim: set foldmethod=marker:
+vim.keymap.set("n", "<C-S-Bslash>", float_term, { desc = "Toggle float terminal" })
+vim.keymap.set("i", "<C-\\>", float_term, { desc = "Toggle float terminal" })-- vim: set foldmethod=marker:
+vim.keymap.set("i", "<C-S-Bslash>", float_term, { desc = "Toggle float terminal" })
 vim.keymap.set("t", "<C-\\>", float_term, { desc = "Toggle float terminal", nowait = true })
+vim.keymap.set("t", "<C-S-Bslash>", float_term, { desc = "Toggle float terminal", nowait = true })
 --}}}
 
 
